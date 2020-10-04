@@ -1,0 +1,16 @@
+.ecukes*
+.cask
+.newsrc*
+*.pyc
+dist
+todo.org
+mimeapps.list
+*autoloads.el
+super-secret-refresh-token
+\#*
+.\#*
+todo.org
+melpazoid*
+scratch.el
+ert-profile*
+tests
