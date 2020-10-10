@@ -525,7 +525,8 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
       (let* ((header (nntwitter--get-header article-number group))
              (mail-header (nntwitter--make-header article-number))
              (score (cdr (assq 'X-Twitter-Likes (mail-header-extra mail-header))))
-             (body (nntwitter-get-text (assoc-default 'id header))))
+             (body (nntwitter-get-text (or (assoc-default 'retweet_id header)
+                                           (assoc-default 'id header)))))
         (when body
           (insert
            "Newsgroups: " group "\n"
@@ -565,7 +566,9 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                 (error (gnus-message 5 "nntwitter-request-article: %s %s"
                                      it (error-message-string err))
                        (insert (nntwitter--br-tagify body))))
-            (insert (nntwitter--br-tagify body)))
+            (insert (nntwitter--br-tagify body))
+            (awhen (assoc-default 'quoted_id header)
+              (insert "<p>\n" (nntwitter--br-tagify (nntwitter-get-text it)))))
           (insert "\n")
           (if (mml-validate)
               (message-encode-message-body)
@@ -711,7 +714,20 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                             nil)))
                   (start (1+ (length (nntwitter-get-headers group)))))
               (dotimes (idx (length care-about))
-                (let ((tweet (nth idx care-about)))
+                (-let* ((tweet (nth idx care-about))
+                        ((&alist 'referenced_tweets referenced-tweets) tweet)
+                        (parent-tweet (seq-find
+                                       (lambda (x) (string= "replied_to"
+                                                            (assoc-default 'type x)))
+                                       referenced-tweets))
+                        (retweeted-tweet (seq-find
+                                          (lambda (x) (string= "retweeted"
+                                                               (assoc-default 'type x)))
+                                          referenced-tweets))
+                        (quoted-tweet (seq-find
+                                       (lambda (x) (string= "quoted"
+                                                            (assoc-default 'type x)))
+                                       referenced-tweets)))
                   (puthash (intern (assoc-default 'id tweet)) (cons group (+ start idx))
                            nntwitter-lookup-hashtb)
                   (-when-let* ((author-id (assoc-default 'author_id tweet))
@@ -743,35 +759,41 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                              '(type url preview_image_url)))
                      media-expansion))
                   (-when-let*
-                      ((parent-user-id (assoc-default 'in_reply_to_user_id tweet))
-                       (parent-user-expansion
+                      ((ref-tweet-id (or (assoc-default 'id parent-tweet)
+                                         (assoc-default 'id retweeted-tweet)
+                                         (assoc-default 'id quoted-tweet)))
+                       (ref-tweet-expansion
                         (seq-find
                          (lambda (x)
-                           (string= parent-user-id (assoc-default 'id x)))
-                         users))
-                       (parent-username (assoc-default 'username parent-user-expansion))
-                       ((&alist 'referenced_tweets referenced-tweets) tweet)
-                       (parent-tweet (seq-find
-                                      (lambda (x) (string= "replied_to"
-                                                           (assoc-default 'type x)))
-                                      referenced-tweets))
-                       (parent-tweet-id (assoc-default 'id parent-tweet))
-                       (parent-tweet-expansion
-                        (seq-find
-                         (lambda (x)
-                           (string= parent-tweet-id (assoc-default 'id x)))
+                           (string= ref-tweet-id (assoc-default 'id x)))
                          tweets))
-                       (parent-text (assoc-default 'text parent-tweet-expansion)))
-                    (setf (nth idx care-about)
-                          (json-add-to-object (nth idx care-about)
-                                              "in_reply_to_user_name" parent-username))
-                    (setf (nth idx care-about)
-                          (json-add-to-object (nth idx care-about)
-                                              "in_reply_to_id" parent-tweet-id))
-                    (unless (or (gethash (intern parent-tweet-id) nntwitter-oob-hashtb)
-                                (gethash (intern parent-tweet-id) nntwitter-lookup-hashtb))
-                      (puthash (intern parent-tweet-id) (cons parent-username parent-text)
-                               nntwitter-oob-hashtb)))))
+                       (ref-text (assoc-default 'text ref-tweet-expansion))
+                       (ref-user-id (assoc-default 'author_id ref-tweet-expansion))
+                       (ref-user-expansion
+                        (seq-find
+                         (lambda (x)
+                           (string= ref-user-id (assoc-default 'id x)))
+                         users))
+                       (ref-username (assoc-default 'username ref-user-expansion)))
+                    (unless (or (gethash (intern ref-tweet-id) nntwitter-oob-hashtb)
+                                (gethash (intern ref-tweet-id) nntwitter-lookup-hashtb))
+                      (puthash (intern ref-tweet-id) (cons ref-username ref-text)
+                               nntwitter-oob-hashtb))
+                    (cond (parent-tweet
+                           (setf (nth idx care-about)
+                                 (json-add-to-object (nth idx care-about)
+                                                     "in_reply_to_user_name" ref-username))
+                           (setf (nth idx care-about)
+                                 (json-add-to-object (nth idx care-about)
+                                                     "in_reply_to_id" ref-tweet-id)))
+                          (retweeted-tweet
+                           (setf (nth idx care-about)
+                                 (json-add-to-object (nth idx care-about)
+                                                     "retweet_id" ref-tweet-id)))
+                          (quoted-tweet
+                           (setf (nth idx care-about)
+                                 (json-add-to-object (nth idx care-about)
+                                                     "quoted_id" ref-tweet-id)))))))
               (puthash (intern group)
                        (nconc (nntwitter-get-headers group) care-about)
                        nntwitter-headers-hashtb))))))
