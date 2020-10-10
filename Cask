@@ -7,6 +7,7 @@
 (development
  (depends-on "ert-runner")
  (depends-on "package-lint")
+ (depends-on "pkg-info")
  (depends-on "ecukes")
  (depends-on "espuds")
  (depends-on "f"))

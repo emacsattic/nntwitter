@@ -1,5 +1,7 @@
 |build-status| |melpa-dev|
 
+  Twitter: millions of users can't be wrong... or not.
+
 A Gnus backend for Twitter.
 
 .. |build-status|
@@ -15,7 +17,7 @@ A Gnus backend for Twitter.
    :target: http://melpa-stable.milkbox.net/#/ein
    :alt: MELPA stable version
 
-.. image:: screenshot.png
+.. image:: screenshot.gif
 .. |--| unicode:: U+2013   .. en dash
 .. |---| unicode:: U+2014  .. em dash, trimming surrounding whitespace
    :trim:
