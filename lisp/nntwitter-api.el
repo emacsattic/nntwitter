@@ -64,7 +64,7 @@
 
 (defsubst nntwitter-api--works-p ()
   "Bug#43834 stymies `emacs -f gnus'.  Return nil if workaround necessary."
-  (or (>= emacs-major-version 28) (string= "dumb" (getenv "TERM"))))
+  (or noninteractive (>= emacs-major-version 28) (string= "dumb" (getenv "TERM"))))
 
 (defun nntwitter-api-route-auth ()
   "Have user login via browser.

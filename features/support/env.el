@@ -51,21 +51,22 @@
   :filter-args (symbol-function 'request)
   (lambda (args)
     (when scenario-recording-p
-      (let* ((url (cl-first args))
-             (fun0 (plist-get args :success))
-             (fun1 (cl-function
-                    (lambda (&rest args &key data &allow-other-keys)
-                      (gnus-score-set (intern url)
-                                      (append (gnus-score-get
-                                               (intern url)
-                                               scenario-recording-alist)
-                                              (list data))
-                                      scenario-recording-alist)))))
-        (setq args (plist-put
-                    args :success
-                    (lambda (&rest args)
-                      (prog1 (apply fun0 args)
-                        (apply fun1 args)))))))
+      (cl-destructuring-bind (url &rest plst)
+          args
+        (let* ((fun0 (plist-get plst :success))
+               (fun1 (cl-function
+                      (lambda (&rest args* &key data &allow-other-keys)
+                        (gnus-score-set (intern url)
+                                        (append (gnus-score-get
+                                                 (intern url)
+                                                 scenario-recording-alist)
+                                                (list data))
+                                        scenario-recording-alist)))))
+          (setq args (cons url (plist-put
+                                plst :success
+                                (lambda (&rest args*)
+                                  (prog1 (apply fun0 args*)
+                                    (apply fun1 args*)))))))))
     args))
 
  (add-function
@@ -118,7 +119,6 @@
 (Fail
  (if noninteractive
      (with-demoted-errors "demote: %s"
-       (Then "end recordings")
        (Teardown))
    (backtrace)
    (keyboard-quit))) ;; useful to prevent emacs from quitting

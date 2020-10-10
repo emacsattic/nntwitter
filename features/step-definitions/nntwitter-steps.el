@@ -10,6 +10,15 @@
       (lambda (group count)
         (should (= (string-to-number count) (length gnus-newsgroup-unreads)))))
 
+(When "^newsrc's last unread id for \"\\(.+\\)\" is \"\\(.+\\)\"$"
+      (lambda (group id)
+        (gnus-read-newsrc-file t)
+        (let* ((info (gnus-get-info group))
+               (params (gnus-info-params info))
+               (newsrc-unread-cons (gnus-group-parameter-value params 'last-unread t))
+               (newsrc-unread-id (cdr newsrc-unread-cons)))
+          (should (string= id newsrc-unread-id)))))
+
 (When "^I should be in buffer like \"\\(.+\\)\"$"
       (lambda (prefix)
         (should (string-prefix-p prefix (buffer-name)))))
@@ -30,7 +39,6 @@
 
 (When "^I scan news$"
       (lambda ()
-        (setq nnhackernews--last-scan-time 0)
         (And "I switch to buffer \"*Group*\"")
         (And "I press \"g\"")
         (And "I dump buffer")))
