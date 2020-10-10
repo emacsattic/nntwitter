@@ -48,6 +48,8 @@
 (require 'url-http)
 (require 'gnus-topic)
 (require 'nntwitter-api)
+(require 'seq)
+(require 'json)
 
 (nnoo-declare nntwitter)
 
@@ -464,7 +466,8 @@ Convert STRING into a 'time structure'."
          (assoc-default 'author_user_name header)
          (format-time-string
           "%a, %d %h %Y %T %z (%Z)"
-          (encode-time (nntwitter-backport-iso8601 (assoc-default 'created_at header))))
+          (let ((time-struct (nntwitter-backport-iso8601 (assoc-default 'created_at header))))
+            (apply #'encode-time time-struct)))
          (nntwitter--make-message-id (assoc-default 'id header))
          (nntwitter--make-references (assoc-default 'id header))
          0 0 nil

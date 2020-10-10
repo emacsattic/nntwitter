@@ -91,6 +91,5 @@ jobs:
 
     - name: test
       run: |
-        make test-run
         make test
       continue-on-error: ${{ matrix.emacs_version == 'snapshot' }}
