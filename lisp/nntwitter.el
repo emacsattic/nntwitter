@@ -1113,36 +1113,65 @@ Written by John Wiegley (https://github.com/jwiegley/dot-emacs).")
     (setq gnus-group-change-level-function #'nntwitter-update-subscription))
   (nntwitter-group-mode))
 
+(defmacro nntwitter--maphash (func table)
+  "Map FUNC taking key and value over TABLE, return nil.
+
+Starting in emacs-src commit c1b63af, Gnus moved from obarrays to normal hashtables."
+  (declare (indent nil))
+  (let ((workaround 'gnus-gethash-safe))
+    `(,(if (fboundp 'gnus-gethash-safe)
+           'mapatoms
+         'maphash)
+      ,(if (fboundp 'gnus-gethash-safe)
+           `(lambda (k) (funcall
+                         (apply-partially
+                          ,func
+                          (symbol-name k) (,workaround k ,table))))
+         func)
+      ,table)))
+
+(defsubst nntwitter-hash-values (table-or-obarray)
+  "Return right hand sides in TABLE-OR-OBARRAY."
+  (let (result)
+    (nntwitter--maphash (lambda (_key value) (push value result)) table-or-obarray)
+    result))
+
+(defsubst nntwitter-hash-keys (table-or-obarray)
+  "Return left hand sides in TABLE-OR-OBARRAY."
+  (let (result)
+    (nntwitter--maphash (lambda (key _value) (push key result)) table-or-obarray)
+    result))
+
 (defun nntwitter-update-unread-params ()
   "Save last-unread tweet id in `gnus-save-newsrc-hook'."
-  (let ((groups (delete "dummy.group" (copy-sequence gnus-group-list))))
-    (mapc
-     (lambda (group)
-       (let ((method (gnus-group-method group)))
-         (when (eq 'nntwitter (car-safe method))
-           (let* ((entry (gnus-group-entry group))
-                  (info (nth 1 entry))
-                  (gnus-newsgroup-name (gnus-info-group info))
-                  (params (gnus-info-params info))
-                  (newsrc-read-ranges (gnus-info-read info)))
-             (nntwitter--with-group nil
-               (while (assq 'last-unread params)
-                 (gnus-alist-pull 'last-unread params))
-               (-when-let* ((headers (nntwitter-get-headers group))
-                            (num-headers (length headers))
-                            (complement (gnus-uncompress-range (list `(1 . ,num-headers))))
-                            (updated-unread-index
-                             (or (car (gnus-list-range-difference complement
-                                                                  newsrc-read-ranges))
-                                 num-headers))
-                            (updated-unread-id (awhen (nth (1- updated-unread-index) headers)
-                                                 (assoc-default 'id it))))
-                 (gnus-info-set-params
-                  info
-                  (cons `(last-unread ,updated-unread-index . ,updated-unread-id) params)
-                  t)
-                 (gnus-set-info gnus-newsgroup-name info)))))))
-     groups)))
+  (mapc
+   (lambda (group)
+     (let* ((method (gnus-group-method group))
+            (backend (car-safe method)))
+       (when (eq 'nntwitter (if (consp backend) (car backend) backend))
+         (let* ((info (gnus-get-info group))
+                (gnus-newsgroup-name (gnus-info-group info))
+                (params (gnus-info-params info))
+                (newsrc-read-ranges (gnus-info-read info)))
+           (message "HECK %s" newsrc-read-ranges)
+           (nntwitter--with-group nil
+             (while (assq 'last-unread params)
+               (gnus-alist-pull 'last-unread params))
+             (-when-let* ((headers (nntwitter-get-headers group))
+                          (num-headers (length headers))
+                          (complement (gnus-uncompress-range (list `(1 . ,num-headers))))
+                          (updated-unread-index
+                           (or (car (gnus-list-range-difference complement
+                                                                newsrc-read-ranges))
+                               num-headers))
+                          (updated-unread-id (awhen (nth (1- updated-unread-index) headers)
+                                               (assoc-default 'id it))))
+               (gnus-info-set-params
+                info
+                (cons `(last-unread ,updated-unread-index . ,updated-unread-id) params)
+                t)
+               (gnus-set-info gnus-newsgroup-name info)))))))
+   (nntwitter-hash-keys gnus-newsrc-hashtb)))
 
 ;; I believe I did try buffer-localizing hooks, and it wasn't sufficient
 (add-hook 'gnus-article-mode-hook #'nntwitter-article-mode-activate)
