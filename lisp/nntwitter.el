@@ -554,24 +554,22 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                (parent-body (nntwitter-get-text parent-id)))
             (insert (nntwitter--citation-wrap parent-author parent-body)))
           (insert "<p>\n")
-          (aif (and nntwitter-render-submission
-                    (or (assoc-default 'url header)
-                        (assoc-default 'preview_image_url header)))
-              (condition-case err
-                  (nntwitter--request
-                   "nntwitter-request-article" it
-                   :success
-                   (lambda (&rest args)
-                     (let ((data (apply #'nntwitter--content-handler args)))
-                       (if (> (length data) nntwitter-max-render-bytes)
-                           (insert (nntwitter--br-tagify body))
-                         (insert data)))))
-                (error (gnus-message 5 "nntwitter-request-article: %s %s"
-                                     it (error-message-string err))
-                       (insert (nntwitter--br-tagify body))))
-            (insert (nntwitter--br-tagify body))
-            (awhen (assoc-default 'quoted_id header)
-              (insert "<p>\n" (nntwitter--br-tagify (nntwitter-get-text it)))))
+          (insert (nntwitter--br-tagify body))
+          (awhen (assoc-default 'quoted_id header)
+            (insert "<p>\n" (nntwitter--br-tagify (nntwitter-get-text it))))
+          (awhen (and nntwitter-render-submission
+                      (or (assoc-default 'url header)
+                          (assoc-default 'preview_image_url header)))
+            (condition-case err
+                (nntwitter--request
+                 "nntwitter-request-article" it
+                 :success
+                 (lambda (&rest args)
+                   (let ((data (apply #'nntwitter--content-handler args)))
+                     (when (< (length data) nntwitter-max-render-bytes)
+                       (insert data)))))
+              (error (gnus-message 5 "nntwitter-request-article: %s %s"
+                                   it (error-message-string err)))))
           (insert "\n")
           (if (mml-validate)
               (message-encode-message-body)
@@ -847,6 +845,12 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                         newsrc-mark-ranges newsrc-mark-ranges-shifted)
           (setf (gnus-info-read info) newsrc-read-ranges-shifted)
           (gnus-info-set-marks info newsrc-mark-ranges-shifted)
+          (while (assq 'last-unread params)
+            (gnus-alist-pull 'last-unread params))
+          (gnus-info-set-params
+           info
+           (cons `(last-unread ,newsrc-unread-index-now . ,newsrc-unread-id) params)
+           t)
           (unless (listp (gnus-info-method info))
             (gnus-info-set-method info (gnus-group-method gnus-newsgroup-name) t))
           (gnus-set-info gnus-newsgroup-name info)
@@ -1153,7 +1157,6 @@ Starting in emacs-src commit c1b63af, Gnus moved from obarrays to normal hashtab
                 (gnus-newsgroup-name (gnus-info-group info))
                 (params (gnus-info-params info))
                 (newsrc-read-ranges (gnus-info-read info)))
-           (message "HECK %s" newsrc-read-ranges)
            (nntwitter--with-group nil
              (while (assq 'last-unread params)
                (gnus-alist-pull 'last-unread params))
