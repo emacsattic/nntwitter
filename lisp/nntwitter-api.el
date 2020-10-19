@@ -6,7 +6,6 @@
 ;; Version: 0
 ;; Keywords: news
 ;; URL: https://github.com/dickmao/nntwitter
-;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is NOT part of GNU Emacs.
 

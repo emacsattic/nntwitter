@@ -6,7 +6,6 @@
 ;; Version: 0
 ;; Keywords: news
 ;; URL: https://github.com/dickmao/nntwitter
-;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -54,6 +53,9 @@
 (nnoo-declare nntwitter)
 
 (nnoo-define-basics nntwitter)
+
+(defgroup nntwitter nil "A Gnus backend for Twitter."
+  :group 'gnus)
 
 (defcustom nntwitter-max-render-bytes 300e3
   "`quoted-printable-encode-region' bogs when the javascript spyware gets out of hand."

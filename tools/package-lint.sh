@@ -15,6 +15,8 @@ export BASENAME=$(basename "$1")
 # this repo uses datetime versions
 ( cd /tmp ; travis_retry curl -OskL https://raw.githubusercontent.com/dickmao/package-lint/datetime/package-lint.el )
 
+# cp /home/dick/package-lint/package-lint.el /tmp/
+
 cask emacs -Q --batch \
            --eval "(let ((dir (file-name-directory (locate-library \"package-lint\")))) \
                      (ignore-errors (delete-file (expand-file-name \
@@ -24,6 +26,7 @@ cask emacs -Q --batch \
 
 # Reduce purity via:
 # --eval "(fset 'package-lint--check-defs-prefix (symbol-function 'ignore))" \
+PKG_MAIN=$(cask files | egrep -- "pkg.el$")
 travis_retry cask emacs -Q --batch \
            -l package-lint \
            --eval "(package-initialize)" \
@@ -41,4 +44,5 @@ travis_retry cask emacs -Q --batch \
                        \"org-babel-variable-assignments:\" \
                        \"org-babel-default-header-args:\" \
                        \"pcomplete/\")))" \
+           --eval "(setq package-lint-main-file (if (zerop (length \"${PKG_MAIN}\")) nil \"${PKG_MAIN}\"))" \
            -f package-lint-batch-and-exit "$1"
