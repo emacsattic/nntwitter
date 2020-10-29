@@ -649,11 +649,15 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
            (newsrc-unread-cons (gnus-group-parameter-value params 'last-unread t))
            (newsrc-unread-index (car newsrc-unread-cons))
            (newsrc-unread-id (cdr newsrc-unread-cons))
-           (last-seen-id (awhen (last (nntwitter-get-headers group))
-                           (apply #'assoc-default 'id it))))
+           (list-last-seen (last (nntwitter-get-headers group))))
       (nntwitter-api-route-recent-search
        group
-       last-seen-id
+       (-when-let* ((header (car list-last-seen))
+                    (time-struct (nntwitter-backport-iso8601 (assoc-default 'created_at header)))
+                    (last-seen-time (apply #'encode-time time-struct))
+                    (seven-days-time (time-add (current-time) (- (* 86400 7))))
+                    (recent-enough-p (time-less-p seven-days-time last-seen-time)))
+         (when recent-enough-p (assoc-default 'id header)))
        (cl-function
         (lambda (&key data &allow-other-keys)
           (-let* ((payload data)

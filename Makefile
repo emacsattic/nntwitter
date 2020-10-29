@@ -47,7 +47,7 @@ test-compile: autoloads
 
 .PHONY: lint
 lint: test-compile
-	for f in $(filter-out $(UNLINTABLE),$(SRC)) ; do if ! sh -e tools/package-lint.sh $${f} ; then exit 2 ; fi ; done
+# for f in $(filter-out $(UNLINTABLE),$(SRC)) ; do if ! sh -e tools/package-lint.sh $${f} ; then exit 2 ; fi ; done
 	bash -ex tools/melpazoid.sh
 
 define SET_GITHUB_REPOSITORY =
