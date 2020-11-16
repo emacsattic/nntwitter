@@ -655,7 +655,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
        (-when-let* ((header (car list-last-seen))
                     (time-struct (nntwitter-backport-iso8601 (assoc-default 'created_at header)))
                     (last-seen-time (apply #'encode-time time-struct))
-                    (seven-days-time (time-add (current-time) (- (* 86400 7))))
+                    (seven-days-time (time-add (current-time) (+ (- (* 86400 7)) 300)))
                     (recent-enough-p (time-less-p seven-days-time last-seen-time)))
          (when recent-enough-p (assoc-default 'id header)))
        (cl-function
