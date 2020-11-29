@@ -65,9 +65,10 @@ jobs:
 
     - name: paths
       run: |
-        echo "::add-path::$HOME/local/bin"
-        echo "::add-path::$HOME/local/cask/bin"
-        echo "::set-env name=LD_LIBRARY_PATH::$HOME/.local/lib"
+        echo "$HOME/local/bin" >> $GITHUB_PATH
+        echo "$HOME/local/cask/bin" >> $GITHUB_PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=$HOME/.local/lib" >> $GITHUB_ENV
 
     - name: apt-get
       if: startsWith(runner.os, 'Linux')
