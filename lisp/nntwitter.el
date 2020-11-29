@@ -69,10 +69,6 @@ Otherwise, just display link."
   :type 'boolean
   :group 'nntwitter)
 
-;; unconditional
-(gnus-define-keys (nntwitter-group-mode-map "R" gnus-group-mode-map)
-  "g" nntwitter-goto-group)
-
 (defvar nntwitter-summary-voting-map
   (let ((map (make-sparse-keymap)))
     map)
@@ -184,13 +180,6 @@ Normalize it to \"nntwitter-default\"."
       (unless (string= (car refs) conversation-id)
         (push conversation-id refs))
       refs)))
-
-(defun nntwitter-goto-group (realname)
-  "Jump to the REALNAME subtwitter."
-  (interactive (list (read-no-blanks-input "Screen Name: @")))
-  (let ((group (gnus-group-full-name realname "nntwitter")))
-    (gnus-activate-group group t)
-    (gnus-group-read-group t t group)))
 
 (defsubst nntwitter--current-article-number ()
   "`gnus-article-current' is a global variable that gets clobbered."
