@@ -36,7 +36,7 @@
 (require 'anaphora)
 
 (defcustom nntwitter-api-pleb-inclusivity nil
-  "Do I care about the replies of non-friends?  Defaults to Yes."
+  "Do I care about the replies of non-friends?  Defaults to No."
   :group 'nntwitter
   :type '(alist	:key-type (string :tag "Friend")
 		:value-type (choice (const :tag "Yes" t)
