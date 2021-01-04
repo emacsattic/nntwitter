@@ -102,7 +102,7 @@ then call `nntwitter-api-route-grant' for next steps."
                              (warning-levels `((:warning ,(format "%s%%s" preface))))
                              (warning-type-format "%s"))
                         (display-warning
-                         ""
+                         'nntwitter
                          (format "%s\n%s%s"
                                  "Please check your browser and follow the instructions."
                                  (make-string (length preface) ? )
