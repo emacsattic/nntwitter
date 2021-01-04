@@ -699,7 +699,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
             (let ((care-about
                    (nreverse
                     (append (cl-case (assoc-default group nntwitter-api-pleb-inclusivity)
-                              ((somewhat t)
+                              ((somewhat nil)
                                (seq-filter
                                 (lambda (datum)
                                   (gethash

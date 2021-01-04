@@ -39,9 +39,9 @@
   "Do I care about the replies of non-friends?  Defaults to Yes."
   :group 'nntwitter
   :type '(alist	:key-type (string :tag "Friend")
-		:value-type (choice (const :tag "Yes" nil)
+		:value-type (choice (const :tag "Yes" t)
                                     (const :tag "Exclude replies to retweets" somewhat)
-                                    (const :tag "No" t))))
+                                    (const :tag "No" nil))))
 
 (defconst nntwitter-api-endpoint "https://41owt9pwx7.execute-api.us-east-2.amazonaws.com/dev")
 
@@ -167,7 +167,7 @@ https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/ge
               ("access_token_secret" . ,nntwitter-api--access-token-secret)
               ("screen_name" . ,group)
               ("include_to" . ,(cl-case (assoc-default group nntwitter-api-pleb-inclusivity)
-                                 ((somewhat nil) "yes")
+                                 ((somewhat t) "yes")
                                  (otherwise "no")))
               ,@since-id-binding)
       :success callback

@@ -21,7 +21,8 @@
  '(gnus-select-method (quote (nnnil)))
  '(gnus-message-highlight-citation nil)
  '(gnus-verbose 8)
- '(gnus-interactive-exit (quote quiet)))
+ '(gnus-interactive-exit (quote quiet))
+ '(nntwitter-api-pleb-inclusivity '(("evilhag" . t))))
 
 (require 'nntwitter)
 (require 'cl-lib)
