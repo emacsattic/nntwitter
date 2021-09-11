@@ -58,7 +58,7 @@
   :group 'gnus)
 
 (defcustom nntwitter-max-render-bytes 300e3
-  "`quoted-printable-encode-region' bogs when the javascript spyware gets out of hand."
+  "`quoted-printable-encode-region' bogs when the js spyware gets out of hand."
   :type 'integer
   :group 'nntwitter)
 
@@ -104,13 +104,6 @@ Otherwise, just display link."
   :lighter " Twitter"
   :keymap nntwitter-summary-mode-map)
 
-(define-minor-mode nntwitter-group-mode
-  "Add `R-g' go-to-subtwitter binding to *Group*.
-
-\\{gnus-group-mode-map}
-"
-  :keymap gnus-group-mode-map)
-
 (cl-defun nntwitter-novote ()
   "Retract vote."
   (interactive)
@@ -149,7 +142,7 @@ Normalize it to \"nntwitter-default\"."
       (error "`nntwitter--normalize-server': multiple servers unsupported!"))))
 
 (defvar nntwitter-headers-hashtb (make-hash-table)
-  "Group (subtwitter) string -> interleaved submissions and comments sorted by created time.")
+  "Group string -> interleaved submissions and comments sorted by created time.")
 
 (defvar nntwitter-lookup-hashtb (make-hash-table)
   "Tweet-id -> (group . article-number).")
@@ -848,7 +841,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
            t)
           (unless (listp (gnus-info-method info))
             (gnus-info-set-method info (gnus-group-method gnus-newsgroup-name) t))
-          (gnus-set-info gnus-newsgroup-name info)
+          (gnus-set-info (gnus-info-group info) info)
           (gnus-message 7 "nntwitter-incoming: new info=%s" info))))))
 
 (defun nntwitter-dump-diagnostics (&optional server)
@@ -1109,8 +1102,7 @@ Written by John Wiegley (https://github.com/jwiegley/dot-emacs).")
   (if gnus-group-change-level-function
       (add-function :after gnus-group-change-level-function
                     #'nntwitter-update-subscription)
-    (setq gnus-group-change-level-function #'nntwitter-update-subscription))
-  (nntwitter-group-mode))
+    (setq gnus-group-change-level-function #'nntwitter-update-subscription)))
 
 (defmacro nntwitter--maphash (func table)
   "Map FUNC taking key and value over TABLE, return nil.
