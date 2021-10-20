@@ -804,6 +804,8 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                   (cl-loop with cand
                            for header in headers
                            for i = 1 then (1+ i)
+			   ;; on 20211020 I saw evilhag ricarlo 1448368200656162816
+			   ;; duped, which resulted in the second one appearing unread
                            if (string= (assoc-default 'id header) newsrc-unread-id)
                            do (gnus-message 7 "nntwitter-incoming: exact=%s" i)
                            and return i ;; do not go to finally
