@@ -935,8 +935,8 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
     (setq result (cl-delete "^Subject:" result :test (lambda (x y) (cl-search x (car y)))))
     (setq result (cl-delete references-key result :test (lambda (x y) (cl-search x (car y)))))
     (push (append '("^\\(Message-I[Dd]\\|^In-Reply-To\\):") references-value) result)
-    (push '("^Subject:" ": *\\(.+\\)$" 1 (>= gnus-button-browse-level 0)
-            nntwitter--browse-root 1)
+    (push '("^Subject:" ".+" 0 (>= gnus-button-browse-level 0)
+            nnreddit--browse-root 0)
           result)
     result))
 
