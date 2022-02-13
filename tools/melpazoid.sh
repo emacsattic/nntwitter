@@ -31,4 +31,4 @@ if [ ! -s ./python ]; then rm -f ./python ; ln -s $PYTHON ./python ; fi
 
 # Later: melpazoid is now an elisp file?
 cd ${ROOT}
-PACKAGE_MAIN=$PKG_MAIN EMACS=$EMACS cask emacs -Q --batch -l package --eval "(setq package-user-dir \"$(cask package-directory)\")" -f package-initialize -L ${ROOT}/melpazoid-master/melpazoid --eval "(setq default-directory \"${PKG_PATH}\")" --eval "(let (eval-expression-print-length eval-expression-print-level) (prin1 package-user-dir (function external-debugging-output)) (prin1 package-directory-list (function external-debugging-output)) (prin1 package-alist (function external-debugging-output)))" -l melpazoid
+PACKAGE_MAIN=$PKG_MAIN EMACS=$EMACS cask emacs -Q --batch -l subr-x -l package --eval "(setq package-user-dir \"$(cask package-directory)\")" -f package-initialize -L ${ROOT}/melpazoid-master/melpazoid --eval "(setq default-directory \"${PKG_PATH}\")" --eval "(let (eval-expression-print-length eval-expression-print-level) (prin1 package-user-dir (function external-debugging-output)) (prin1 package-directory-list (function external-debugging-output)) (prin1 package-alist (function external-debugging-output)))" -l melpazoid
