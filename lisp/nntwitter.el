@@ -812,13 +812,16 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                            do (gnus-message 7 "nntwitter-incoming: exact=%s" i)
                            ;; skip outer finally
                            and return (cl-loop
-                                       for j = (1+ i) then (1+ j)
-                                       while (<= j (length headers))
+                                       for j from (length headers) downto i
                                        for header = (nth (1- j) headers)
-                                       while (string= (assoc-default 'id header)
+                                       until (string= (assoc-default 'id header)
                                                       newsrc-unread-id)
-                                       do (gnus-message 7 "nntwitter-incoming: dup=%s" j)
-                                       finally return (1- j))
+                                       finally return
+                                       (prog1 j
+                                         (when (/= i j)
+                                           (gnus-message
+                                            7 "nntwitter-incoming: duped-id=%s duped-index=%s -> %s"
+                                            newsrc-unread-id i j))))
                            end
                            if (and (null cand)
                                    (string> (assoc-default 'id header) newsrc-unread-id))
@@ -837,7 +840,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                             (t (cons (car what-ranges)
                                      (nntwitter--shift-ranges delta (cdr what-ranges))))))
                         newsrc-mark-ranges)))
-          (gnus-message 7 "nntwitter-incoming: unread-id=%s          unread-index=%s -> %s"
+          (gnus-message 7 "nntwitter-incoming: unread-id=%s unread-index=%s -> %s"
                         newsrc-unread-id newsrc-unread-index newsrc-unread-index-now)
           (gnus-message 7 "nntwitter-incoming: read-ranges=%s shifted-read-ranges=%s"
                         newsrc-read-ranges newsrc-read-ranges-shifted)
