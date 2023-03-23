@@ -393,8 +393,7 @@ yet again."
 
 (defun nntwitter-backport-iso8601 (string)
   "The module iso8601 is only emacs-27; copy the logic here.
-
-Convert STRING into a 'time structure'."
+Convert STRING into a time structure."
   (let* ((concat-regexps
           (lambda (regexps)
             (mapconcat (lambda (regexp)
@@ -838,7 +837,7 @@ be curl (defaults to `url-retrieve')."
                (newsrc-mark-ranges-shifted
                 (mapcar (lambda (what-ranges)
                           (cl-case (car what-ranges)
-                            ('seen `(seen (1 . ,num-headers)))
+                            (seen `(seen (1 . ,num-headers)))
                             (t (cons (car what-ranges)
                                      (nntwitter--shift-ranges delta (cdr what-ranges))))))
                         newsrc-mark-ranges)))
