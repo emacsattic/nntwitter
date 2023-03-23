@@ -138,7 +138,7 @@ Normalize it to \"nntwitter-default\"."
       (setq server nil))
     (unless server
       (setq server canonical))
-    (unless (string= server canonical)
+    (unless (equal server canonical)
       (error "`nntwitter--normalize-server': multiple servers unsupported!"))))
 
 (defvar nntwitter-headers-hashtb (make-hash-table)
@@ -170,7 +170,7 @@ Normalize it to \"nntwitter-default\"."
                                     collect parent-id
                                     do (cl-incf level))))
            (conversation-id (assoc-default 'conversation_id tweet-in-question)))
-      (unless (string= (car refs) conversation-id)
+      (unless (equal (car refs) conversation-id)
         (push conversation-id refs))
       refs)))
 
@@ -322,8 +322,8 @@ Originally written by Paul Issartel."
 
 (deffoo nntwitter-request-group-scan (group &optional server _info)
   "M-g from *Group* calls this.
-
-Set flag for the ensuing `nntwitter-request-group' to avoid going out to PRAW yet again."
+Set flag for the ensuing `nntwitter-request-group' to avoid going out to PRAW
+yet again."
   (nntwitter--normalize-server)
   (nntwitter--with-group group
     (gnus-message 5 "nntwitter-request-group-scan: scanning %s..." group)
@@ -444,7 +444,7 @@ Convert STRING into a 'time structure'."
              (title (car (split-string (nntwitter-get-text conversation-id) "[\n\r\v]+"))))
         (make-full-mail-header
          article-number
-         (if (string= id conversation-id)
+         (if (equal id conversation-id)
              title
            (concat "Re: " title))
          (assoc-default 'author_user_name header)
@@ -466,8 +466,8 @@ Convert STRING into a 'time structure'."
                                    &aux (response-status
                                          (request-response-status-code response)))
   "Refer to CALLER when reporting a submit error.
-
-Also report http code of RESPONSE, which is distinct from SYMBOL-STATUS, and ERROR-THROWN.  The http code is stored in RESPONSE-STATUS."
+Also report http code of RESPONSE, which is distinct from SYMBOL-STATUS, and
+ERROR-THROWN.  The http code is stored in RESPONSE-STATUS."
   (gnus-message 3 "%s %s: http status %s, %s"
                 caller symbol-status response-status
                 (error-message-string error-thrown)))
@@ -478,7 +478,9 @@ Also report http code of RESPONSE, which is distinct from SYMBOL-STATUS, and ERR
                              &allow-other-keys)
   "Prefix errors with CALLER when executing synchronous request to URL.
 
-Request shall contain ATTRIBUTES, one of which is PARSER of the response, if provided (shall default to verbatim dump of response, if not).  BACKEND can be curl (defaults to `url-retrieve')."
+Request shall contain ATTRIBUTES, one of which is PARSER of the response, if
+provided (shall default to verbatim dump of response, if not).  BACKEND can
+be curl (defaults to `url-retrieve')."
   (unless parser
     (setq attributes (nconc attributes (list :parser #'buffer-string))))
   (setq attributes (cl-loop for (k v) on attributes by (function cddr)
@@ -497,11 +499,11 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
   (let* ((_ (string-match "Content-Type:\\s-*\\([[:graph:]]+\\)" header))
          (content-type (match-string 1 header)))
     (cl-destructuring-bind (type _subtype) (split-string content-type "/")
-      (cond ((string= type "image")
+      (cond ((equal type "image")
              (format "<p><img src=\"data:%s;base64,%s\" />"
                      content-type
                      (base64-encode-string (encode-coding-string data 'binary) t)))
-            ((string= type "text") (format "<div>%s<br></div>" data))
+            ((equal type "text") (format "<div>%s<br></div>" data))
             (t (error "`nntwitter--content-handler': passing on %s" content-type))))))
 
 (deffoo nntwitter-request-article (article-number &optional group server buffer)
@@ -600,7 +602,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                         (gnus-message 5 "nntwitter-request-list: scanning %s...done" realname)
                         (when (> (gnus-group-level group) gnus-level-subscribed)
                           (gnus-group-unsubscribe-group group gnus-level-default-subscribed t))
-                        (setq newsrc (cl-remove group newsrc :test #'string=))))
+                        (setq newsrc (cl-remove group newsrc :test #'equal))))
                     friends)
               (mapc (lambda (group)
                       (gnus-message 4 "nntwitter-request-list: missing subscription %s" group)
@@ -668,13 +670,13 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                           (author-id (assoc-default
                                       'id
                                       (seq-find
-                                       (lambda (x) (string= group
+                                       (lambda (x) (equal group
                                                             (assoc-default 'username x)))
                                        users))))
                     (mapc (lambda (datum)
                             (let ((id (intern (assoc-default 'id datum))))
                               (puthash id
-                                       (string= author-id (assoc-default 'author_id datum))
+                                       (equal author-id (assoc-default 'author_id datum))
                                        nntwitter-api--conversation-ids)
                               (unless (or (gethash id nntwitter-oob-hashtb)
                                           (gethash id nntwitter-lookup-hashtb))
@@ -706,15 +708,15 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                 (-let* ((tweet (nth idx care-about))
                         ((&alist 'referenced_tweets referenced-tweets) tweet)
                         (parent-tweet (seq-find
-                                       (lambda (x) (string= "replied_to"
+                                       (lambda (x) (equal "replied_to"
                                                             (assoc-default 'type x)))
                                        referenced-tweets))
                         (retweeted-tweet (seq-find
-                                          (lambda (x) (string= "retweeted"
+                                          (lambda (x) (equal "retweeted"
                                                                (assoc-default 'type x)))
                                           referenced-tweets))
                         (quoted-tweet (seq-find
-                                       (lambda (x) (string= "quoted"
+                                       (lambda (x) (equal "quoted"
                                                             (assoc-default 'type x)))
                                        referenced-tweets)))
                   (puthash (intern (assoc-default 'id tweet)) (cons group (+ start idx))
@@ -723,7 +725,7 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                                (author-expansion
                                 (seq-find
                                  (lambda (x)
-                                   (string= author-id (assoc-default 'id x)))
+                                   (equal author-id (assoc-default 'id x)))
                                  users)))
                     (setf (nth idx care-about)
                           (json-add-to-object (nth idx care-about) "author_user_name"
@@ -754,14 +756,14 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
                        (ref-tweet-expansion
                         (seq-find
                          (lambda (x)
-                           (string= ref-tweet-id (assoc-default 'id x)))
+                           (equal ref-tweet-id (assoc-default 'id x)))
                          tweets))
                        (ref-text (assoc-default 'text ref-tweet-expansion))
                        (ref-user-id (assoc-default 'author_id ref-tweet-expansion))
                        (ref-user-expansion
                         (seq-find
                          (lambda (x)
-                           (string= ref-user-id (assoc-default 'id x)))
+                           (equal ref-user-id (assoc-default 'id x)))
                          users))
                        (ref-username (assoc-default 'username ref-user-expansion)))
                     (unless (or (gethash (intern ref-tweet-id) nntwitter-oob-hashtb)
@@ -808,13 +810,13 @@ Request shall contain ATTRIBUTES, one of which is PARSER of the response, if pro
 			   ;; 1448368200656162816 duped, which
 			   ;; resulted in the second one appearing
 			   ;; unread
-                           if (string= (assoc-default 'id header) newsrc-unread-id)
+                           if (equal (assoc-default 'id header) newsrc-unread-id)
                            do (gnus-message 7 "nntwitter-incoming: exact=%s" i)
                            ;; skip outer finally
                            and return (cl-loop
                                        for j from (length headers) downto i
                                        for header = (nth (1- j) headers)
-                                       until (string= (assoc-default 'id header)
+                                       until (equal (assoc-default 'id header)
                                                       newsrc-unread-id)
                                        finally return
                                        (prog1 j
@@ -1121,8 +1123,8 @@ Written by John Wiegley (https://github.com/jwiegley/dot-emacs).")
 
 (defmacro nntwitter--maphash (func table)
   "Map FUNC taking key and value over TABLE, return nil.
-
-Starting in emacs-src commit c1b63af, Gnus moved from obarrays to normal hashtables."
+Starting in emacs-src commit c1b63af, Gnus moved from obarrays to normal
+hashtables."
   (declare (indent nil))
   (let ((workaround 'gnus-gethash-safe))
     `(,(if (fboundp 'gnus-gethash-safe)
@@ -1274,7 +1276,7 @@ Starting in emacs-src commit c1b63af, Gnus moved from obarrays to normal hashtab
  (lambda (f &rest args)
    (let ((concat-func (lambda (f &rest args)
                        (let ((fetched (apply f args)))
-                         (if (string= (car args) "from")
+                         (if (equal (car args) "from")
                              (concat fetched "@twitter.com")
                            fetched)))))
      (when (nntwitter--gate)

@@ -16,7 +16,7 @@
            (params (gnus-info-params info))
            (newsrc-unread-cons (gnus-group-parameter-value params 'last-unread t))
            (newsrc-unread-id (cdr newsrc-unread-cons)))
-      (should (string= id newsrc-unread-id)))))
+      (should (equal id newsrc-unread-id)))))
 
 (When "^I should be in buffer like \"\\(.+\\)\"$"
   (lambda (prefix)

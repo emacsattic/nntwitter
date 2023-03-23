@@ -55,7 +55,7 @@
          (token-dir (concat (file-name-as-directory data-home) "nntwitter")))
     (unless (file-directory-p token-dir)
       (make-directory token-dir t))
-    (unless (string= "700" (format "%o" (file-modes token-dir)))
+    (unless (equal "700" (format "%o" (file-modes token-dir)))
       (set-file-modes token-dir #o700))
     (with-temp-file (concat (file-name-as-directory token-dir) "access_token")
       (insert access-token "\n")
@@ -63,7 +63,7 @@
 
 (defsubst nntwitter-api--works-p ()
   "Bug#43834 stymies `emacs -f gnus'.  Return nil if workaround necessary."
-  (or noninteractive (>= emacs-major-version 28) (string= "dumb" (getenv "TERM"))))
+  (or noninteractive (>= emacs-major-version 28) (equal "dumb" (getenv "TERM"))))
 
 (defun nntwitter-api-route-auth ()
   "Have user login via browser.
@@ -83,7 +83,7 @@ then call `nntwitter-api-route-grant' for next steps."
                                    (lambda (x)
                                      (cl-destructuring-bind (key value)
                                          (split-string x "=")
-                                       (when (string= key "oauth_token")
+                                       (when (equal key "oauth_token")
                                          value)))
                                    (split-string query "&")))
                            success-p
