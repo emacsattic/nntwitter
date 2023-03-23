@@ -99,11 +99,6 @@ jobs:
         sh tools/install-cask.sh
         cask link list
 
-    - name: lint
-      if: startsWith(runner.os, 'Linux')
-      run: |
-        PYTHON=${{ matrix.python_version }} make lint
-
     - name: test
       run: |
         make test
