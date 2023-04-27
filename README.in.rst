@@ -28,18 +28,21 @@
 
 Install
 =======
-As described in `Getting started`_, ensure melpa's whereabouts in ``init.el`` or ``.emacs``::
-
-   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-
-Then
-
-::
-
-   M-x package-refresh-contents RET
-   M-x package-install RET nntwitter RET
-
+We are trying to push ELPASO_ as the preferred package installer.
 Alternatively, directly clone this repo and ``make install``.
+
+**On 27 April 2023, Twitter actualized its promised embargo of Free
+Tier applications including nntwitter.**  While the announcement to
+move Twitter's API to a paid model occurred much earlier in February
+2023, we only witnessed HTTP 403 (Forbidden) responses shortly after
+midnight today.
+
+We want to thank the user of nntwitter for supporting us through the years.
+Yes, "user" is singular.  We also want to thank Mr. Musk for exercising
+fiscal discretion in terminating free access to its API.  While we ourselves
+balk at ponying 100$ per month required of Basic Access, our frugality
+is not Mr. Musk's fault.  We hold out hope a sponsor will materialize to
+restore nntwitter to its erstwhile glory.
 
 Usage
 =====
@@ -74,3 +77,4 @@ Gnus beginners may find the interface bewildering.  In particular, feeds with no
 .. _Getting started: http://melpa.org/#/getting-started
 .. _virtualenv: https://virtualenv.pypa.io/en/stable
 .. _PRAW: https://github.com/praw-dev/praw/pull/1094
+.. _ELPASO: http://github.com/dickmao/elpaso
